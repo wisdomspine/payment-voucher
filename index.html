@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Payment Voucher</title>
+    <style>
+      :root {
+        --gutter-sm: 4px;
+        --gutter-md: 6px;
+        --border-color: #010101;
+        --stamp-color: blue;
+      }
+      * {
+        box-sizing: border-box;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      .vertical-text {
+        writing-mode: vertical-rl; /* Makes text flow from top to bottom */
+        text-align: start;
+      }
+      .textbox {
+        border: 1px solid var(--border-color);
+        padding-left: 2px;
+        padding-right: 2px;
+      }
+      body {
+        display: flex;
+        align-items: center;
+        flex-flow: column nowrap;
+      }
+      .container {
+        max-width: 874px;
+        padding: 24px;
+        display: flex;
+        flex-flow: row nowrap;
+        font-size: 0.78em;
+        line-height: 1.5em;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        flex-flow: row;
+        align-items: center;
+        position: relative;
+        margin-bottom: 8px;
+      }
+      header img {
+        height: 54px;
+      }
+      header .header-titles {
+        flex-grow: 1;
+      }
+      header .header-titles * {
+        font-size: 1.2em;
+        line-height: 1.11em;
+        font-weight: bold;
+        font-family: Arial, Helvetica, sans-serif;
+        text-transform: uppercase;
+        text-align: center;
+      }
+      header .header-no {
+        position: absolute;
+        left: calc(73%);
+        bottom: 0.6em;
+      }
+      .container aside {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+      }
+      .container aside .tags {
+        text-transform: uppercase;
+        font-size: 0.78em;
+        line-height: 1em;
+        font-style: italic;
+        margin-bottom: 20px;
+        margin-top: 20px;
+      }
+      .main {
+        flex-grow: 1;
+      }
+      .main > article {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        margin-right: var(--gutter-sm);
+      }
+      .metadata-section {
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: stretch;
+      }
+      .metadata-section-left {
+        flex-grow: 1;
+        display: flex;
+        flex-flow: column nowrap;
+        gap: var(--gutter-md);
+      }
+      .metadata-section-left .metadata-no {
+        display: flex;
+        flex-flow: row nowrap;
+        gap: 54px;
+      }
+      .metadata-section-left .metadata-no .metadata-no-value {
+        font-weight: bold;
+      }
+      .metadata-section-left .metdata-content {
+        display: flex;
+        flex-flow: row nowrap;
+        gap: var(--gutter-sm);
+      }
+      .metadata-section-left .metdata-content .metdata-content-values {
+        flex-grow: 1;
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        grid-template-rows: repeat(8, 24px);
+        gap: var(--gutter-sm);
+        font-size: 12px;
+        align-items: center;
+      }
+
+      .metadata-section-left .metdata-content .metdata-content-stamp {
+        padding-left: 24px;
+      }
+      .metadata-section-left .metdata-content .metdata-content-stamp p {
+        font-size: 0.84em;
+        line-height: 1.2em;
+      }
+      .metadata-section-left .metadata-payee {
+        display: grid;
+        grid-template-columns: 64px 1fr;
+        grid-template-rows: auto;
+      }
+      .metadata-section-right {
+        display: flex;
+        flex-flow: column nowrap;
+        padding-left: 10px;
+        padding-top: 8px;
+        flex-shrink: 1;
+        padding-bottom: var(--gutter-md);
+      }
+      .metadata-section-right > * {
+        margin-bottom: var(--gutter-sm);
+        min-height: 24px;
+        font-size: 12px;
+      }
+      .metadata-section-right > span {
+        margin-left: -10px;
+        font-size: 0.8em;
+        margin-bottom: -7px;
+        padding-bottom: 2px;
+        padding-top: 2px;
+      }
+
+      .container > aside .aside-stamps {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: flex-end;
+        margin-top: 54px;
+        gap: 54px;
+        padding-right: 8px;
+      }
+      .container > aside .voucher-status {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+      .container > aside .aside-stamps p {
+        position: relative;
+        margin-right: 0px;
+      }
+      .container > aside .aside-stamps p .check {
+        background: url("/assets/check.png");
+        width: 16px;
+        top: -24px;
+        height: auto;
+        display: inline-block;
+        position: absolute;
+      }
+      .container .table-section {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        gap: var(--gutter-sm);
+        position: relative;
+      }
+      .table-section .outer-table td,
+      .table-section .outer-table th {
+        border: 1px solid var(--border-color);
+        padding: 2px;
+      }
+      .table-section .inner-table {
+        margin-top: 54px;
+      }
+      .table-section .inner-table td {
+        border: none;
+        padding: 2px 0px;
+        width: 100%;
+      }
+      .table-section .inner-table tr td:nth-child(even) {
+        text-align: right;
+      }
+      .summary-section {
+        display: flex;
+        gap: var(--gutter-sm);
+        align-items: stretch;
+        padding: 0px 2px;
+      }
+      .summary-section-left,
+      .summary-section-right {
+        width: 0px;
+        flex-grow: 1;
+        flex-shrink: 1;
+      }
+      .summary-section-left {
+        border: 1px solid var(--border-color);
+        padding: 4px 8px;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        gap: 12px;
+      }
+      .dash {
+        border-bottom: 1px solid var(--border-color);
+      }
+
+      .summary-section-right {
+        padding: 2px 0px;
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        gap: 12px;
+        position: relative;
+      }
+      .final-summary {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 2px;
+      }
+
+      /** Stamp */
+      .table-section .stamp {
+        position: absolute;
+        color: var(--stamp-color);
+        border: 2px solid var(--stamp-color);
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        top: 50%;
+        left: 50%;
+        padding: 8px 6px;
+        gap: var(--gutter-md);
+        transform: translate(-50%, -50%) rotate(-18deg);
+      }
+      .table-section .stamp .stamp-title {
+        font-size: 2em;
+        line-height: 1.1;
+        text-align: center;
+      }
+      .table-section .stamp .stamp-controls {
+        display: flex;
+        flex-flow: column nowrap;
+        align-items: stretch;
+        font-size: 1.2em;
+        line-height: 1.5em;
+      }
+
+      .btn {
+        background-color: #1877f2; /* Facebook blue */
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s, box-shadow 0.3s;
+      }
+
+      /* Hover state */
+      .btn:hover {
+        background-color: #145dbf;
+      }
+
+      /* Active state */
+      .btn:active {
+        background-color: #0d4a9c;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      /* Focus state */
+      .btn:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(24, 119, 242, 0.5);
+      }
+
+      @media print {
+        .btn {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="main">
+        <header>
+          <!-- logo -->
+          <img src="./assets/coat_of_arm.png" alt="" />
+          <div class="header-titles">
+            <h2>Federal Government of Nigeria</h2>
+            <h1>Payment voucher</h1>
+          </div>
+          <div class="header-no">
+            <span>Treasury F1</span>
+          </div>
+        </header>
+        <article>
+          <section class="metadata-section">
+            <div class="metadata-section-left">
+              <!-- number -->
+              <div class="metadata-no">
+                <span class="metadata-no-label">Daptal No.</span>
+                <span class="metadata-no-value"
+                  >PV/NASS/MGT/ADV/REC/2024/3/398</span
+                >
+              </div>
+              <!-- metadata top -->
+              <div class="metdata-content">
+                <!-- aside -->
+                <div class="vertical-text metdata-content-stamp">
+                  <p>For use in payment of Advances</p>
+                  <p>
+                    Certified the Advance of <span class="naira"></span
+                    ><span class="advance-amount"></span><br />
+                    has been entered entered on TF 174(A) (H) or (C)<br />
+                    Deptal No.<span></span>
+                  </p>
+                  <p>
+                    <span>Signature</span><span>..................</span><br />
+                    <span>Name in Block Letters</span
+                    ><span>..................</span>
+                  </p>
+                </div>
+                <!-- metadata -->
+                <div class="metdata-content-values">
+                  <span class="textbox" style="grid-area: 1/1/2/6"
+                    >DataType3</span
+                  >
+                  <span style="grid-area: 1/6/2/11" class="textbox"
+                    >4 Source 6</span
+                  >
+                  <span style="grid-area: 1/11/2/21" class="textbox">
+                    7 Voucher Number 14</span
+                  >
+                  <!-- row two -->
+                  <span class="textbox" style="grid-area: 2/1/3/6">VO 1</span>
+                  <span class="textbox" style="grid-area: 2/6/3/11">0112</span>
+                  <span class="textbox" style="grid-area: 2/11/3/16"
+                    >REX 1</span
+                  >
+                  <span class="textbox" style="grid-area: 2/16/3/21">0</span>
+                  <span class="textbox" style="grid-area: 2/21/3/25"
+                    >Station</span
+                  >
+
+                  <!-- row three -->
+                  <div class="textbox" style="grid-area: 3/1/4/16">
+                    <span>15</span>
+                    <span>Classicaton cout</span>
+                    <span>26</span>
+                  </div>
+                  <span class="textbox" style="grid-area: 3/21/4/25">Head</span>
+
+                  <!-- row 4 -->
+                  <span class="textbox" style="grid-area: 4/1/5/4">0112</span>
+                  <span class="textbox" style="grid-area: 4/4/5/7">001</span>
+                  <span class="textbox" style="grid-area: 4/7/5/13"
+                    >220210</span
+                  >
+                  <span class="textbox" style="grid-area: 4/13/5/18">1014</span>
+                  <span class="textbox" style="grid-area: 4/21/5/25"
+                    >S/Head</span
+                  >
+
+                  <!-- row 5 -->
+                  <div class="textbox" style="grid-area: 5/1/6/7">
+                    <span>27</span>
+                    <span>Date</span>
+                    <span>32</span>
+                  </div>
+                  <div class="textbox" style="grid-area: 5/7/6/25">
+                    <span>33</span>
+                    <span>Amount</span>
+                    <span>45</span>
+                  </div>
+
+                  <!-- row 6 -->
+                  <span class="textbox" style="grid-area: 6/1/7/7">&nbsp;</span>
+                  <span class="textbox" style="grid-area: 6/7/7/25"
+                    ><span class="naira">6,000,000.00</span></span
+                  >
+                  <!-- row 7 -->
+                  <span class="textbox" style="grid-area: 7/1/8/7"
+                    >46Sourco48</span
+                  >
+                  <div class="textbox" style="grid-area: 7/7/8/21">
+                    <span>49</span>
+                    <span>Classification</span>
+                    <span>60</span>
+                  </div>
+
+                  <!-- row 8 -->
+                  <span class="textbox" style="grid-area: 8/1/9/7">&nbsp;</span>
+                  <span class="textbox" style="grid-area: 8/7/9/21"
+                    >&nbsp;</span
+                  >
+                </div>
+              </div>
+              <div class="metadata-payee" style="margin-top: 8px">
+                <!-- row 1 -->
+                <span>Payee:</span>
+                <span style="text-decoration: underline"
+                  >CHINYERE AKB IOYE</span
+                >
+
+                <!-- row 2 -->
+                <span>Address:</span>
+                <span style="text-decoration: underline">NASS ABUJA</span>
+              </div>
+            </div>
+            <!-- Checked and passed for payment st column -->
+            <div class="metadata-section-right">
+              <span class="" style="line-height: 1"
+                >Checked and passed for payment at</span
+              >
+              <div class="textbox">Abuja</div>
+              <div class="textbox">Abuja</div>
+              <div class="textbox">0112</div>
+              <div class="textbox">1014</div>
+              <div
+                class="textbox"
+                style="
+                  flex-grow: 1;
+                  display: flex;
+                  flex-flow: column nowrap;
+                  align-items: stretch;
+                  padding: 0px;
+                "
+              >
+                <span
+                  style="
+                    border-bottom: 1px solid var(--border-color);
+                    padding: 2px;
+                  "
+                  >Bank</span
+                >
+                <span
+                  class="amount"
+                  style="padding-left: 2px; padding-right: 2px; flex-grow: 1"
+                  >0</span
+                >
+                <span
+                  style="
+                    border-top: 1px solid var(--border-color);
+                    padding: 2px;
+                  "
+                  >Cheque No.</span
+                >
+              </div>
+              <div class="textbox">&nbsp;</div>
+            </div>
+          </section>
+          <!-- table section -->
+          <section class="table-section">
+            <!-- stamp -->
+            <div class="stamp">
+              <span class="stamp-title">NATIONAL ASSEMBLY<br />ABUJA</span>
+              <div class="stamp-controls">
+                <span>ENTERED INTO VOTE BOOK No ........</span>
+                <span
+                  >Line No
+                  ..................................................</span
+                >
+                <span
+                  >Sign.....................Date...........................</span
+                >
+              </div>
+            </div>
+            <!-- label -->
+            <div
+              class="table-no"
+              style="
+                display: flex;
+                flex-flow: row nowrap;
+                gap: var(--gutter-md);
+                margin-bottom: calc(-1 * var(--gutter-md));
+              "
+            >
+              <span
+                style="
+                  font-weight: 900;
+                  flex-grow: 9;
+                  font-size: 1.3em;
+                  text-align: right;
+                "
+                >No. 9267</span
+              >
+              <span style="flex-grow: 2">14/03/2024</span>
+            </div>
+            <table class="outer-table">
+              <thead>
+                <th style="text-align: left">Date</th>
+                <th>Detailed Description of Service/Work</th>
+                <th
+                  style="
+                    display: flex;
+                    justify-content: space-between;
+                    padding-left: 12px;
+                  "
+                >
+                  <span>₦</span> <span>K</span>
+                </th>
+              </thead>
+              <tbody>
+                <tr>
+                  <td rowspan="2" style="vertical-align: top">7 Mar 2024</td>
+                  <td>
+                    <span
+                      >Being Cash advance granted to the above named Officer for
+                      the renewal of NASS house for the year, 2024. Find
+                      relevate minutes of approval attached in file
+                      NASS/FRA/CAD/ICT/II refers</span
+                    >
+                    <table class="inner-table">
+                      <tbody>
+                        <tr>
+                          <td>Total Amount</td>
+                          <td>₦6,000,000.00</td>
+                        </tr>
+                        <tr>
+                          <td>Loss 0.0% VAT =₦0.00:</td>
+                          <td>₦6,000,000.00</td>
+                        </tr>
+                        <tr>
+                          <td>Loss 09 TAX - ₦O.00</td>
+                          <td>₦0.00</td>
+                        </tr>
+                        <tr>
+                          <td>Loss 0% Stamp Duty</td>
+                          <td style="text-decoration: underline">₦0.00</td>
+                        </tr>
+                        <tr>
+                          <td>Loss VAT Refund: =0.00</td>
+                          <td style="text-decoration: underline">₦0.00</td>
+                        </tr>
+                        <tr>
+                          <td style="font-weight: bold">Amount Payable</td>
+                          <td
+                            style="
+                              font-weight: bold;
+                              text-decoration: underline;
+                            "
+                          >
+                            ₦6,000,000.00
+                          </td>
+                        </tr>
+                        <tr>
+                          <td>Amount Outstanding</td>
+                          <td>₦0.00</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <h4 style="margin: 0px">HONOUR CERTIFICATE</h4>
+                    <p style="margin-bottom: 4px">
+                      I certify that I have no outstanding, advance gainst me
+                      and authorise em-alac deduction of the said amount:<br />
+                      from my salory if on completion of the assignment the
+                      advance is not reured.
+                    </p>
+                    <div style="display: flex; justify-content: space-between">
+                      <span>NAME:_____________</span
+                      ><span>Rank:_______________</span>
+                    </div>
+                    <div
+                      style="
+                        display: flex;
+                        justify-content: space-between;
+                        margin-top: 8px;
+                      "
+                    >
+                      <span>DATE:_____________</span
+                      ><span>SIGN:_______________</span>
+                      <span>OFFICE:_______________</span>
+                    </div>
+                  </td>
+                  <td style="padding-left: 12px; vertical-align: top">
+                    6,000,000.00
+                  </td>
+                </tr>
+                <tr>
+                  <td style="border: none; padding: 0px">
+                    <div
+                      style="
+                        border: 1px solid var(--border-color);
+                        margin-top: -3px;
+                        padding: 2px;
+                      "
+                    >
+                      <div
+                        style="display: flex; justify-content: space-between"
+                      >
+                        <span>Checked and passed for</span>
+                        <span>Insert amount in words</span>
+                        <span style="font-weight: bold">TOTAL</span>
+                      </div>
+                      <p style="margin: 4px 0px; font-weight: bold">
+                        Six Million, Naira Only.
+                      </p>
+                    </div>
+                  </td>
+                  <td style="padding: 0px; position: relative; border: none">
+                    <div
+                      style="
+                        border: 1px solid var(--border-color);
+                        margin-top: -3px;
+                        text-align: right;
+                        position: absolute;
+                        padding: 2px;
+                        top: 0;
+                        bottom: 0;
+                        left: 0;
+                        right: 0;
+                        display: flex;
+                        align-items: flex-end;
+                        justify-content: flex-end;
+                      "
+                    >
+                      <span style="font-weight: bold; margin-bottom: 4px">
+                        6,000,000.00
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </section>
+          <!-- summary section -->
+          <section class="summary-section">
+            <!-- left -->
+            <div class="summary-section-left">
+              <!-- signature and payment date -->
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: auto 1fr;
+                  grid-template-rows: auto;
+                  row-gap: 8px;
+                  column-gap: 24px;
+                "
+              >
+                <!-- row 1 -->
+                <span>Payable At</span>
+                <span style="text-indent: 24px">Abuja</span>
+                <!-- row 2 -->
+                <span>Signature</span>
+                <span class="dash" style="margin-bottom: 4px"></span>
+              </div>
+              <div>
+                <span style="line-height: 1"> Name in Block<br />Letters:</span>
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: auto 1fr;
+                  grid-template-rows: auto;
+                  row-gap: 8px;
+                  column-gap: 24px;
+                "
+              >
+                <span>Station</span>
+                <div style="display: flex">
+                  <span style="flex-grow: 1">Abuja</span>
+                  <span style="flex-grow: 2"> Date: <span></span> </span>
+                </div>
+              </div>
+              <div
+                style="
+                  display: grid;
+                  grid-template-columns: auto 1fr;
+                  grid-template-rows: auto;
+                  column-gap: 8px;
+                "
+              >
+                <span>Paying Officer's Signature</span>
+                <span class="dash" style="margin-bottom: 4px"></span>
+              </div>
+              <div>
+                <span> Name in Block<br />Letters:</span>
+              </div>
+              <div style="display: flex; gap: 52px">
+                <span> GW/SW </span>
+                <span>GW/01/2024</span>
+              </div>
+              <span>Authy. AIE No.etc.</span>
+            </div>
+            <!-- right -->
+            <div class="summary-section-right">
+              <div style="flex-grow: 1">
+                <h4 style="margin: 0px">CERTIFICATE</h4>
+                <p style="margin: 0px; text-align: justify">
+                  I certify the above amount is correst, and wass incurred under
+                  the authority quoted; that the service has been duly
+                  performed; that the rate/price charged is according to
+                  regulations; contract is fair and reasonable; that the amount
+                  of <br />Six Million, Naira Only,<br />may be paid under the
+                  classification quoted.
+                </p>
+              </div>
+              <div
+                style="
+                  display: flex;
+                  align-items: stretch;
+                  flex-flow: column nowrap;
+                "
+              >
+                <span style="text-align: center">FATIMA YUSUF</span>
+                <span class="dash"></span>
+                <span style="text-align: center"
+                  >Signature of Officer Contr. Expenditure</span
+                >
+              </div>
+              <div>
+                <div style="display: flex; flex-flow: row nowrap">
+                  <span>Place:</span>
+                  <span style="margin-left: 32px">Abuja</span>
+                  <span style="margin-left: 52px">Date:</span>
+                  <span
+                    class="dash"
+                    style="flex-grow: 1; margin-left: 12px; margin-bottom: 4px"
+                  ></span>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    flex-flow: row nowrap;
+                    gap: 60px;
+                    margin-bottom: 16px;
+                  "
+                >
+                  <span>Designation</span>
+                  <span style="text-decoration: underline">AD(ACCTS)</span>
+                </div>
+                <span
+                  class="dash"
+                  style="position: absolute; left: 0; right: 0; bottom: 0"
+                ></span>
+                <span
+                  style="
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    bottom: -1.4em;
+                    text-align: center;
+                  "
+                  >Signature</span
+                >
+              </div>
+            </div>
+          </section>
+
+          <!-- final summary -->
+          <div class="final-summary">
+            <span style="font-weight: 600"
+              >Received from the Federal Government of Nigeria the sum of:</span
+            >
+            <span>Six Million, Naira Only.</span>
+            <div
+              style="
+                display: flex;
+                flex-flow: row nowrap;
+                justify-content: space-between;
+              "
+            >
+              <span>In full settlement of the account:</span>
+              <div style="font-size: 1.2em; font-weight: bold">
+                <span>₦6,000,000:00</span>
+                <span style="margin-left: 24px">K</span>
+              </div>
+              <div>
+                <span>Date: </span><span>__________________</span>
+                <span>20</span><span>_________</span>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+      <aside>
+        <p class="tags">
+          Original<br />
+          Duplicate<br />
+          Triplicate<br />
+          Quadruplicate
+        </p>
+        <span class="textbox voucher-status"> Voucher&nbsp;Status </span>
+        <div class="aside-stamps">
+          <p class="vertical-text">
+            <img src="./assets/check.png" alt="" class="check" />
+            Prepared By: <span>Monday Audu 3/7/2024 12:00"00 AM</span>
+            <br />
+            Votebooked By: <br />
+            Audited By: <br />
+            Released By: <br />
+          </p>
+          <p class="vertical-text">
+            <img src="./assets/check.png" alt="" class="check" />
+            Printed By:
+            <span
+              >Monday Audu <span>3/7/2024</span> <span>2:48:43 PM</span></span
+            >
+            <br />
+            Checked By: <br />
+            Witheld By: <br />
+            Paid By: <br />
+          </p>
+        </div>
+      </aside>
+    </div>
+    <button type="button" class="btn" id="printBtn">Print</button>
+
+    <script>
+      window.addEventListener("load", () => {
+        const printBtn = document.querySelector("#printBtn");
+        printBtn?.addEventListener("click", () => {
+          // print document
+          window.print();
+        });
+      });
+    </script>
+  </body>
+</html>
